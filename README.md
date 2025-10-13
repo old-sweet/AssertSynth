@@ -19,14 +19,14 @@ This repository provides **all prompt templates** and **experiment design data (
 
 | Stage | Prompt File | Purpose |
 |--------|--------------|----------|
-| **1️⃣ Preprocessing** | `preprocess_prompt.txt` | Unified modality + semantic classification |
-| **2️⃣ Multimodal Extraction** | `text_extraction_prompt.txt` / `table_extraction_prompt.txt` / `diagram_extraction_prompt.txt` / `formula_extraction_prompt.txt` | Extract structured data from heterogeneous spec formats |
-| **3️⃣ SVA Generation** | `sva_generation_prompt.txt` | 4-step CoT prompting to synthesize assertions |
+| **1、Preprocessing** | `preprocess_prompt.txt` | Unified modality + semantic classification |
+| **2、Multimodal Extraction** | `text_extraction_prompt.txt` / `table_extraction_prompt.txt` / `diagram_extraction_prompt.txt` / `formula_extraction_prompt.txt` | Extract structured data from heterogeneous spec formats |
+| **3、SVA Generation** | `sva_generation_prompt.txt` | 4-step CoT prompting to synthesize assertions |
 | **Optional Refinement** | `sva_refinement_prompt.txt` | Mutation-guided feedback refinement |
 
 ---
 
-## ⚙️ Experimental Designs
+## Experimental Designs
 
 The `designs/` directory contains the three RTL modules used in our experiments:
 
