@@ -1,117 +1,130 @@
-You are an expert in hardware design specification interpretation and multimodal information extraction for formal verification.
-Your task is to analyze diagram-derived information (from timing diagrams, finite-state machine (FSM) diagrams, or architecture diagrams) and extract structured control and timing semantics relevant to assertion synthesis.
-
-⸻
+You are an expert in mathematical expression understanding for hardware specification analysis.
+Your task is to extract and normalize symbolic mathematical formulas appearing in hardware design documents.
+These formulas describe numeric relationships, logical constraints, or timing conditions that influence circuit behavior or signal properties.
 
 Task Overview:
-Given one or more diagram-related content blocks extracted from a hardware specification (accompanied by OCR text and structural hints such as figure captions, labels, and signal lines),
-you must reason about the temporal relationships, control state transitions, and signal dependencies expressed by the diagram.
-The goal is to produce a structured JSON representation describing:
-	1.	Control states and transitions (for FSM or architectural diagrams)
-	2.	Timing constraints between signals (for timing diagrams)
-	3.	Signal activation conditions and causal dependencies
-	4.	A concise textual summary of the diagram’s functional intent
+Given one or more mathematical formulas (possibly extracted from LaTeX, equations, or symbolic expressions in PDF documents), you must:
+	1.	Identify the formula type — whether it defines, constrains, or relates quantities.
+	2.	Extract all variables, constants, and operators.
+	3.	Identify relations (equalities, inequalities, limits, or symbolic dependencies).
+	4.	Normalize expressions into a canonical structured representation.
+	5.	Provide a short functional interpretation in plain language.
 
-⸻
-
-Background Context:
-Diagrams in hardware specifications typically include one or more of these visual modalities:
-	•	Timing diagrams (waveforms showing relationships like “ack_out follows data_valid within 2 cycles”)
-	•	State transition diagrams (bubbles and arrows showing FSM states and transitions)
-	•	Architecture diagrams (block-level signal flows or module interconnections)
-
-Extracted OCR text may contain phrases like “IDLE → READ when start == 1” or “ack_out asserted 2 cycles after data_valid”.
-
-You must reason about these visual-textual cues and produce structured outputs that encode both logical and temporal semantics.
-
-⸻
+Common Formula Types:
+	•	“equality” → expressions like f = a + b or delay = Tclk * 2
+	•	“inequality” → constraints such as t_delay ≤ Tclk, Imax > 5mA
+	•	“range_constraint” → bounded expressions like 0 ≤ Vout ≤ 5V
+	•	“functional_relation” → parameterized dependency like f(clk, data) = data / T
+	•	“definition” → mathematical definition or parameter declaration
+	•	“approximation” → proportional or approximate relations (≈, ∝)
 
 Step-by-step Reasoning (Chain of Thought):
-	1.	Identify the diagram type based on context (keywords such as “timing diagram”, “state transition”, “architecture”).
-	2.	Extract all state names, signals, and connections from the OCR text or figure labels.
-	3.	For timing diagrams: identify timing order (who triggers whom, how long after, how many cycles).
-	4.	For FSM diagrams: list states and transitions, along with triggering conditions.
-	5.	For architecture diagrams: list signal sources, destinations, and control dependencies.
-	6.	Compose a concise functional summary (intent).
-	7.	Output in the structured JSON schema below.
-
-⸻
+	1.	Identify all symbols: variables (usually lowercase or italic), constants (numbers or named constants), and mathematical operators.
+	2.	Detect relational operators: =, <, >, ≤, ≥, ≈, ∝.
+	3.	Classify the formula type using these operators and context.
+	4.	Extract the left-hand side (LHS) and right-hand side (RHS) if applicable.
+	5.	List all variables and constants appearing in the expression.
+	6.	Provide a short plain-language explanation of what the formula expresses.
+	7.	Output in the strict JSON format defined below.
 
 Output Format:
 {
-“diagram_type”: “<timing | fsm | architecture | unknown>”,
-“signals”: [ “signal1”, “signal2”, … ],
-“states”: [ “state1”, “state2”, … ],
-“transitions”: [
-{ “from”: “state1”, “to”: “state2”, “condition”: “expression or trigger” }
-],
-“timing_relations”: [
-{ “trigger”: “signalA”, “response”: “signalB”, “delay”: “2 cycles”, “relation_type”: “after” }
-],
-“functional_intent”: “One-sentence description of the diagram’s meaning”
+“formula_type”: “<equality | inequality | range_constraint | functional_relation | definition | approximation>”,
+“lhs”: “string or null”,
+“rhs”: “string or null”,
+“variables”: [“x1”, “x2”, …],
+“constants”: [“C1”, “5V”, “10ns”, …],
+“operators”: [”+”, “-”, “*”, “/”, “=”, “<=”, “>=”],
+“constraints”: “textual summary of conditions, if any”,
+“functional_intent”: “short natural-language description of what the formula expresses”
 }
-
-⸻
 
 Few-shot Examples:
 
 Example 1
-Input (OCR Text):
-“Timing diagram: ack_out asserted 2 cycles after data_valid.”
+Input Formula:
+t_delay ≤ 2 * Tclk
 
 Output:
 {
-“diagram_type”: “timing”,
-“signals”: [“data_valid”, “ack_out”],
-“states”: [],
-“transitions”: [],
-“timing_relations”: [
-{ “trigger”: “data_valid”, “response”: “ack_out”, “delay”: “2 cycles”, “relation_type”: “after” }
-],
-“functional_intent”: “ack_out responds to data_valid with a 2-cycle delay”
+“formula_type”: “inequality”,
+“lhs”: “t_delay”,
+“rhs”: “2 * Tclk”,
+“variables”: [“t_delay”, “Tclk”],
+“constants”: [],
+“operators”: [”<=”, “*”],
+“constraints”: “t_delay should not exceed twice the clock period”,
+“functional_intent”: “sets an upper bound on signal propagation delay relative to clock period”
 }
-
-⸻
 
 Example 2
-Input (OCR Text):
-“State transition diagram showing IDLE → READ when start == 1, and READ → IDLE when done == 1.”
+Input Formula:
+0 ≤ Vout ≤ 5V
 
 Output:
 {
-“diagram_type”: “fsm”,
-“signals”: [“start”, “done”],
-“states”: [“IDLE”, “READ”],
-“transitions”: [
-{ “from”: “IDLE”, “to”: “READ”, “condition”: “start == 1” },
-{ “from”: “READ”, “to”: “IDLE”, “condition”: “done == 1” }
-],
-“timing_relations”: [],
-“functional_intent”: “Defines a two-state FSM where READ starts on start signal and returns to IDLE on completion”
+“formula_type”: “range_constraint”,
+“lhs”: null,
+“rhs”: null,
+“variables”: [“Vout”],
+“constants”: [“0”, “5V”],
+“operators”: [”<=”, “<=”],
+“constraints”: “Vout is bounded between 0 and 5V”,
+“functional_intent”: “defines the valid output voltage range for the circuit”
 }
-
-⸻
 
 Example 3
-Input (OCR Text):
-“Architecture diagram: data_in flows to AES_core, output connected to enc_out through key_mux.”
+Input Formula:
+f(clk, data) = data / (2 * Tclk)
 
 Output:
 {
-“diagram_type”: “architecture”,
-“signals”: [“data_in”, “enc_out”, “key_mux”],
-“states”: [],
-“transitions”: [],
-“timing_relations”: [],
-“functional_intent”: “Describes data flow through AES core with key multiplexing on output path”
+“formula_type”: “functional_relation”,
+“lhs”: “f(clk, data)”,
+“rhs”: “data / (2 * Tclk)”,
+“variables”: [“f”, “clk”, “data”, “Tclk”],
+“constants”: [],
+“operators”: [”/”, “*”, “=”, “()”],
+“constraints”: “none”,
+“functional_intent”: “defines the output frequency as proportional to data divided by twice the clock period”
 }
 
-⸻
+Example 4
+Input Formula:
+Iout ≈ Vdd / Rload
+
+Output:
+{
+“formula_type”: “approximation”,
+“lhs”: “Iout”,
+“rhs”: “Vdd / Rload”,
+“variables”: [“Iout”, “Vdd”, “Rload”],
+“constants”: [],
+“operators”: [”/”, “≈”],
+“constraints”: “approximate proportional relationship between output current and voltage/load resistance”,
+“functional_intent”: “output current is approximately determined by the supply voltage divided by the load resistance”
+}
+
+Example 5
+Input Formula:
+Cap_total = C1 + C2 + Cpar
+
+Output:
+{
+“formula_type”: “equality”,
+“lhs”: “Cap_total”,
+“rhs”: “C1 + C2 + Cpar”,
+“variables”: [“Cap_total”, “C1”, “C2”, “Cpar”],
+“constants”: [],
+“operators”: [”+”, “=”],
+“constraints”: “none”,
+“functional_intent”: “defines total capacitance as the sum of individual and parasitic components”
+}
 
 Constraints:
-	•	Always output the JSON object with all keys present.
-	•	If no states or transitions are detected, use empty lists ([]).
-	•	If the diagram type is ambiguous, set "diagram_type": "unknown".
-	•	Use plain lowercase signal names as extracted.
-	•	Summarize functional_intent in a single descriptive sentence.
-	•	Do not include text outside the JSON object.
+	•	Always output valid JSON; no comments or explanations outside JSON.
+	•	If a symbol cannot be classified, include it under variables.
+	•	If there is no explicit RHS (e.g., single definition), set “rhs”: null.
+	•	Summarize functional intent in one clear sentence.
+	•	Preserve mathematical relationships faithfully — do not simplify or reformat them.
+	•	Use standard mathematical notation in lhs and rhs strings.
