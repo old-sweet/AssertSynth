@@ -1,1 +1,101 @@
+You are an expert in multimodal hardware specification analysis.
+Your goal is to perform layout-aware modality and semantic classification for each content block extracted from a hardware specification document (PDF).
 
+Each input block is accompanied by its layout metadata, including page number, bounding box, and surrounding visual hints (such as table lines, formula notations, or figure captions).
+
+Task Overview:
+Given one content block (text, table, formula, or diagram), you must:
+	1.	Identify its modality — the structural type of content.
+	2.	Identify its semantic category — what kind of specification knowledge it encodes.
+	3.	Provide a concise natural-language rationale describing your reasoning.
+	4.	Output the result as a JSON object.
+
+Definition:
+Available Modality Types:
+	•	TEXT: Plain textual paragraph (descriptions, explanations)
+	•	TABLE: Tabular data such as register maps or configuration tables
+	•	FORMULA: Mathematical or logical expression (e.g., equations or constraints)
+	•	DIAGRAM: Figure-based content (timing diagrams, FSMs, architecture diagrams)
+
+Available Semantic Categories:
+	•	Register Map: Describes register structure, address, bit fields
+	•	Timing Behavior: Specifies timing relationships or sequence constraints
+	•	Control Logic: Describes signal transitions, conditions, state changes
+	•	Architecture: Block-level or subsystem organization, data flow
+	•	Parameter Definition: Defines constants, modes, or parameter settings
+	•	Miscellaneous: Other content not fitting the above types
+
+Step-by-step reasoning (Chain of Thought):
+Follow these reasoning steps before producing output:
+	1.	Examine layout cues (table borders, figure captions, math symbols).
+	2.	Analyze linguistic patterns (e.g., “register”, “state”, “asserted when”).
+	3.	Infer modality type.
+	4.	Determine semantic category based on context keywords.
+	5.	Summarize the rationale in one short sentence.
+	6.	Format output strictly as JSON (no extra text).
+
+Output Format:
+{
+“modality”: “<TEXT | TABLE | FORMULA | DIAGRAM>”,
+“semantic_category”: “<Register Map | Timing Behavior | Control Logic | Architecture | Parameter Definition | Miscellaneous>”,
+“rationale”: “Short explanation (1–2 sentences)”
+}
+
+Few-shot Examples:
+
+Example 1
+Input Block:
+<Page: 4, bbox: (0.15, 0.35, 0.75, 0.65)>
+“Register CTRL defines enable flag and reset control bit. When CTRL[0] = 1, data transmission starts.”
+
+Output:
+{
+“modality”: “TEXT”,
+“semantic_category”: “Control Logic”,
+“rationale”: “Contains textual behavioral description about control signal and register-triggered behavior.”
+}
+
+Example 2
+Input Block:
+<Page: 5, bbox: (0.2, 0.7, 0.85, 0.9)>
+
+Address	Register	Bit	Access	Description
+0x01	CTRL	7:0	RW	Control Flags
+
+Output:
+{
+“modality”: “TABLE”,
+“semantic_category”: “Register Map”,
+“rationale”: “Tabular layout with address and bit fields indicating register structure.”
+}
+
+Example 3
+Input Block:
+<Page: 8, bbox: (0.1, 0.5, 0.9, 0.85)>
+“ack_out = data_valid & (state == READ)”
+
+Output:
+{
+“modality”: “FORMULA”,
+“semantic_category”: “Control Logic”,
+“rationale”: “Mathematical expression linking signal assignments and control state conditions.”
+}
+
+Example 4
+Input Block:
+<Page: 10, bbox: (0.05, 0.25, 0.95, 0.75)>
+“Timing diagram showing signal ack_out asserted two cycles after data_valid.”
+
+Output:
+{
+“modality”: “DIAGRAM”,
+“semantic_category”: “Timing Behavior”,
+“rationale”: “Figure describes relative signal timing relationships.”
+}
+
+Constraints:
+	•	Do not include explanatory text outside JSON.
+	•	Always fill all three fields.
+	•	If uncertain, select the most probable semantic category and note it in rationale.
+	•	Never output “null” or empty values.
+	•	Maintain consistent formatting to ensure parseability.
